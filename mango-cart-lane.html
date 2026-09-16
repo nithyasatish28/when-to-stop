@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Mango Cart Lane</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#BFE8C8; --bg2:#9FDBAE; --ink:#2A1E3F; --card:#fff;
+  --mango:#FF9F1C; --pass:#FF5D8F; --buy:#21A366; --sky:#3C7DD9; --soft:#F1FAF3;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:17px/1.55 "Nunito",system-ui,sans-serif;min-height:100vh;
+  background-image:radial-gradient(circle at 8% 12%,var(--bg2) 0 90px,transparent 91px),
+                   radial-gradient(circle at 95% 40%,var(--bg2) 0 130px,transparent 131px),
+                   radial-gradient(circle at 20% 95%,var(--bg2) 0 110px,transparent 111px);
+  background-attachment:fixed}
+h1,h2,h3{font-family:"Baloo 2",system-ui,sans-serif;line-height:1.05;margin:0}
+main{max-width:560px;margin:0 auto;padding:22px 16px 70px}
+button,select{font:inherit}
+button{cursor:pointer;border:0}
+button:focus-visible,select:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+h1{font-size:2.3rem;font-weight:800;letter-spacing:-.01em}
+.top select{background:#fff;border:2px solid var(--ink);border-radius:12px;padding:.2em .5em;font-weight:700;color:var(--ink)}
+.intro{background:#fff;border-radius:20px;padding:14px 16px;margin:14px 0 0;font-size:.98rem;box-shadow:0 4px 0 var(--bg2)}
+.intro p{margin:.2em 0}
+.intro summary{cursor:pointer;font-weight:800}
+
+.progress{display:flex;justify-content:space-between;align-items:center;margin:18px 4px 8px;font-weight:800}
+.dots{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;max-width:60%}
+.dots i{width:8px;height:8px;border-radius:50%;background:rgba(42,30,63,.18)}
+.dots i.done{background:var(--ink)}
+.dots i.now{background:var(--mango);transform:scale(1.4)}
+
+.deck{position:relative;height:430px;touch-action:pan-y}
+.card{position:absolute;inset:0;background:var(--card);border-radius:30px;border:3px solid var(--ink);box-shadow:0 8px 0 var(--ink);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px;user-select:none;cursor:grab;
+  transition:transform .35s cubic-bezier(.2,.8,.3,1.2),opacity .3s}
+.card.dragging{transition:none;cursor:grabbing}
+.card.enter{transform:scale(.85) translateY(20px);opacity:0}
+.card.under{transform:scale(.94) translateY(16px);opacity:.6;pointer-events:none;box-shadow:0 4px 0 var(--ink)}
+.cartno{position:absolute;top:16px;left:20px;font-weight:800;font-size:.95rem;opacity:.6}
+.vendor{position:absolute;top:14px;right:18px;font-size:.9rem;font-weight:700;opacity:.6}
+.mango-svg{width:190px;height:190px}
+.score{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:4rem;line-height:1;margin-top:4px}
+.score small{font-size:1.3rem;opacity:.55}
+.meter{width:80%;height:16px;border:3px solid var(--ink);border-radius:10px;margin-top:12px;overflow:hidden;background:var(--soft)}
+.meter i{display:block;height:100%;background:linear-gradient(90deg,#9BD35A,#FFD23F,var(--mango))}
+.mood{margin-top:10px;font-weight:700;opacity:.75;text-align:center}
+.stamp{position:absolute;top:60px;font-family:"Baloo 2",sans-serif;font-weight:800;font-size:2.4rem;padding:0 .4em;border:5px solid;border-radius:14px;opacity:0;pointer-events:none}
+.stamp.pass{left:22px;color:var(--pass);transform:rotate(-14deg)}
+.stamp.buy{right:22px;color:var(--buy);transform:rotate(14deg)}
+
+.actions{display:flex;justify-content:center;gap:28px;margin-top:26px}
+.round{width:76px;height:76px;border-radius:50%;border:3px solid var(--ink);box-shadow:0 5px 0 var(--ink);font-size:2rem;display:grid;place-items:center;background:#fff;transition:transform .1s}
+.round:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.round.pass{color:var(--pass)}
+.round.buy{background:var(--mango)}
+.round:disabled{opacity:.35;cursor:not-allowed}
+.labels{display:flex;justify-content:center;gap:28px;font-weight:800;font-size:.85rem;margin-top:8px}
+.labels span{width:76px;text-align:center}
+.keys{text-align:center;font-size:.82rem;opacity:.6;margin-top:6px}
+.note{text-align:center;min-height:1.6em;font-weight:700;margin-top:10px}
+
+.trail{margin-top:16px;background:rgba(255,255,255,.55);border-radius:16px;padding:10px 12px}
+.trail h3{font-size:1rem;margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:#fff;border:2px solid var(--ink);border-radius:10px;padding:0 .5em;font-weight:800;font-size:.9rem;position:relative}
+.chips .empty{opacity:.6;font-size:.9rem}
+
+.result{background:#fff;border:3px solid var(--ink);box-shadow:0 8px 0 var(--ink);border-radius:30px;padding:22px 20px;text-align:center}
+.result h2{font-size:2.2rem}
+.result .big{font-size:4rem;line-height:1}
+.result p{margin:.5em 0}
+.lane{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px;margin:16px 0 8px;text-align:center}
+.slot{border:2px solid var(--ink);border-radius:12px;padding:14px 2px 4px;position:relative;font-weight:800;background:var(--soft)}
+.slot .n{position:absolute;top:1px;left:5px;font-size:.62rem;opacity:.55;font-weight:700}
+.slot.mine{background:var(--mango)}
+.slot.best{box-shadow:0 0 0 3px #FFD23F}
+.slot .crown{position:absolute;top:-14px;right:-6px;font-size:1.1rem}
+.slot .tg{display:block;font-size:.6rem;line-height:1.2;border-radius:6px;color:#fff;margin-top:2px}
+.tg.r{background:var(--ink)} .tg.p{background:var(--sky)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;font-size:.85rem;font-weight:700}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend b{display:inline-block;width:14px;height:14px;border-radius:4px;border:2px solid var(--ink)}
+.verdicts{text-align:left;background:var(--soft);border-radius:16px;padding:10px 14px;margin-top:12px}
+.verdicts p{margin:.35em 0}
+.btn-big{background:var(--buy);color:#fff;border:3px solid var(--ink);box-shadow:0 5px 0 var(--ink);border-radius:999px;padding:.6em 1.6em;font-weight:800;font-size:1.1rem;margin-top:14px}
+.btn-big:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+
+.board{background:#fff;border-radius:24px;padding:18px;margin-top:26px;box-shadow:0 5px 0 var(--bg2)}
+.board h2{font-size:1.6rem}
+.scores{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0;text-align:center}
+.scores div{background:var(--soft);border-radius:14px;padding:8px 4px;font-size:.78rem;font-weight:700;line-height:1.25}
+.scores strong{display:block;font-family:"Baloo 2",sans-serif;font-size:1.9rem;line-height:1.1}
+.scores .you{background:#FFE7C2} .scores .pl{background:#DCE8FA}
+.reflect{margin:.4em 0;font-size:.95rem}
+.explain{display:none;border-top:2px dashed #cfe3d4;margin-top:12px;padding-top:12px;font-size:.95rem}
+.explain.show{display:block}
+.explain p{margin:.4em 0}
+.bars{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.bars span{background:#DCE8FA;border-radius:10px;padding:.1em .6em;font-weight:700;font-size:.88rem}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
+.btn-small{background:var(--soft);border:2px solid var(--ink);border-radius:999px;padding:.3em 1em;font-weight:800;color:var(--ink)}
+.tiny{font-size:.82rem;opacity:.7}
+@media (max-width:420px){.deck{height:400px}.mango-svg{width:160px;height:160px}.score{font-size:3.4rem}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <h1>Mango Cart Lane</h1>
+    <label class="tiny" style="opacity:1;font-weight:800">Carts
+      <select id="count"><option>10</option><option selected>20</option><option>40</option></select>
+    </label>
+  </div>
+
+  <details class="intro" open>
+    <summary>How to play</summary>
+    <p>You're walking down a one-way lane of mango carts. Swipe right to buy the mango, or left to keep walking. You can't go back, and you can buy only one.</p>
+    <p><strong>You win only if you buy the sweetest mango in the lane.</strong> Scores are spread evenly, so a mango scoring 80 is sweeter than 80% of all mangoes anywhere.</p>
+  </details>
+
+  <div id="play">
+    <div class="progress"><span id="progress">Cart 1 of 20</span><span class="dots" id="dots"></span></div>
+    <div class="deck" id="deck"></div>
+    <div class="actions">
+      <button class="round pass" id="passBtn" aria-label="Keep walking">✕</button>
+      <button class="round buy" id="buyBtn" aria-label="Buy this mango">🥭</button>
+    </div>
+    <div class="labels"><span>Walk on</span><span>Buy</span></div>
+    <div class="keys">or use the ← and → keys</div>
+    <div class="note" id="note" aria-live="polite"></div>
+    <div class="trail">
+      <h3>Mangoes you've passed</h3>
+      <div class="chips" id="chips"><span class="empty">None yet</span></div>
+    </div>
+  </div>
+
+  <div id="done" hidden></div>
+
+  <section class="board">
+    <h2>Scoreboard</h2>
+    <div class="scores">
+      <div><strong id="s-lanes">0</strong>lanes</div>
+      <div class="you"><strong id="s-you">0</strong>you won</div>
+      <div><strong id="s-rule">0</strong>37% rule won</div>
+      <div class="pl"><strong id="s-plan">0</strong>bar plan won</div>
+    </div>
+    <p class="reflect" id="reflect">Finish a lane to start the scoreboard.</p>
+    <div class="explain" id="explain">
+      <h3>How the bar plan works</h3>
+      <p>Buy a mango only if it's the sweetest you've seen so far <strong>and</strong> its score clears a bar. The bar depends on how many carts are still ahead. With many carts left, only a near-perfect mango is worth it. As the lane runs out, the bar drops.</p>
+      <div class="bars" id="bars"></div>
+    </div>
+    <div class="row">
+      <button class="btn-small" id="copy">Copy results</button>
+      <button class="btn-small" id="reset">Reset</button>
+      <span class="tiny" id="copyNote">Paste into a shared sheet to pool the class's lanes.</span>
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+let N = 20, vals = [], pos = 0, over = false, chosen = -1, best = -1, rulePick = -1, planPick = -1, busy = false;
+let log = [];
+const vendors = ['Ravi\'s cart','Amma\'s cart','Lakshmi\'s cart','Suresh\'s cart','Farida\'s cart','Gopal\'s cart','Meena\'s cart','Anil\'s cart','Kavya\'s cart','Joseph\'s cart'];
+
+/* ---------- strategies ---------- */
+const barCache = {};
+function barFor(k){           // k = carts still ahead after this one
+  if (k in barCache) return barCache[k];
+  let lo = 0, hi = 1;
+  for (let it = 0; it < 60; it++){
+    const b = (lo + hi) / 2; let s = 0;
+    for (let j = 1; j <= k; j++) s += (Math.pow(b, -j) - 1) / j;
+    if (s > 1) lo = b; else hi = b;
+  }
+  return barCache[k] = (lo + hi) / 2;
+}
+const cutoffFor = n => Math.round(n / Math.E);
+const show = v => (v / 10).toFixed(1);
+function ruleChoice(v){
+  const k = cutoffFor(v.length), bar = Math.max(...v.slice(0, k));
+  for (let i = k; i < v.length; i++) if (v[i] > bar) return i;
+  return v.length - 1;
+}
+function planChoice(v){
+  let top = -1;
+  for (let i = 0; i < v.length; i++){
+    if (v[i] > top){ top = v[i]; const ahead = v.length - 1 - i; if (ahead === 0 || v[i] / 1000 >= barFor(ahead)) return i; }
+  }
+  return v.length - 1;
+}
+
+/* ---------- mango illustration ---------- */
+function mangoSVG(v){
+  const s = v / 1000;                                   // 0..1
+  const lerp = (a, b, t) => Math.round(a + (b - a) * t);
+  const c1 = s < .5 ? [lerp(126,255,s*2), lerp(196,210,s*2), lerp(80,63,s*2)] : [255, lerp(210,140,(s-.5)*2), lerp(63,20,(s-.5)*2)];
+  const col = `rgb(${c1.join(',')})`;
+  const mouthY = 128, curve = Math.round((s - .45) * 36);  // negative = frown
+  const blush = s > .7 ? `<ellipse cx="72" cy="120" rx="10" ry="6" fill="#FF6F91" opacity=".55"/><ellipse cx="128" cy="120" rx="10" ry="6" fill="#FF6F91" opacity=".55"/>` : '';
+  const sparkle = s > .9 ? `<path d="M168 40 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4z" fill="#FFD23F" stroke="#2A1E3F" stroke-width="2"/>` : '';
+  const eyes = s > .9
+    ? `<path d="M68 100 q8 -10 16 0" stroke="#2A1E3F" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M116 100 q8 -10 16 0" stroke="#2A1E3F" stroke-width="5" fill="none" stroke-linecap="round"/>`
+    : `<circle cx="76" cy="100" r="7" fill="#2A1E3F"/><circle cx="124" cy="100" r="7" fill="#2A1E3F"/><circle cx="78" cy="97" r="2.5" fill="#fff"/><circle cx="126" cy="97" r="2.5" fill="#fff"/>`;
+  return `<svg class="mango-svg" viewBox="0 0 200 200" aria-hidden="true">
+    <path d="M100 28 C150 26 182 70 176 118 C170 166 128 188 92 184 C50 180 22 150 26 108 C30 64 58 30 100 28Z" fill="${col}" stroke="#2A1E3F" stroke-width="5"/>
+    <path d="M60 60 C70 48 84 42 96 42" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".5" fill="none"/>
+    <path d="M100 30 C98 18 104 10 110 6" stroke="#2A1E3F" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M108 14 C126 0 150 4 160 14 C146 26 124 28 108 14Z" fill="#48B35E" stroke="#2A1E3F" stroke-width="4"/>
+    ${eyes}${blush}
+    <path d="M82 ${mouthY} Q100 ${mouthY + curve} 118 ${mouthY}" stroke="#2A1E3F" stroke-width="5" fill="none" stroke-linecap="round"/>
+    ${sparkle}
+  </svg>`;
+}
+function moodText(v){
+  const s = v / 10;
+  if (s >= 95) return 'Unbelievably sweet!';
+  if (s >= 85) return 'Very sweet';
+  if (s >= 65) return 'Pretty sweet';
+  if (s >= 40) return 'Just okay';
+  if (s >= 20) return 'A bit sour';
+  return 'Sour! Your face scrunches up';
+}
+
+/* ---------- game flow ---------- */
+function newLane(){
+  N = +$('#count').value;
+  const seen = new Set(); vals = [];
+  while (vals.length < N){ const v = Math.floor(Math.random() * 1001); if (!seen.has(v)){ seen.add(v); vals.push(v); } }
+  pos = 0; over = false; chosen = -1; busy = false;
+  best = vals.indexOf(Math.max(...vals));
+  rulePick = ruleChoice(vals); planPick = planChoice(vals);
+  $('#play').hidden = false; $('#done').hidden = true;
+  $('#deck').innerHTML = '';
+  dealCard(true);
+}
+
+function makeCard(i, under){
+  const c = document.createElement('div');
+  c.className = 'card' + (under ? ' under' : '');
+  if (under){ c.innerHTML = `<span class="cartno">Cart ${i + 1}</span><div style="font-size:4rem;opacity:.25">?</div>`; return c; }
+  const v = vals[i];
+  c.innerHTML = `<span class="vendor" style="left:20px;right:auto">${vendors[i % vendors.length]}</span>
+    <span class="stamp pass">WALK ON</span><span class="stamp buy">BUY!</span>
+    ${mangoSVG(v)}
+    <div class="score">${show(v)}<small>/100</small></div>
+    <div class="meter"><i style="width:${v / 10}%"></i></div>
+    <div class="mood">${moodText(v)}</div>`;
+  c.setAttribute('role', 'group');
+  c.setAttribute('aria-label', `Cart ${i + 1} of ${N}. Sweetness ${show(v)} out of 100.`);
+  return c;
+}
+
+function dealCard(first){
+  const deck = $('#deck');
+  deck.innerHTML = '';
+  if (pos + 1 < N) deck.appendChild(makeCard(pos + 1, true));
+  const c = makeCard(pos, false);
+  c.classList.add('enter');
+  deck.appendChild(c);
+  requestAnimationFrame(() => requestAnimationFrame(() => c.classList.remove('enter')));
+  attachSwipe(c);
+  updateHud();
+}
+
+function updateHud(){
+  $('#progress').textContent = `Cart ${pos + 1} of ${N}`;
+  $('#dots').innerHTML = Array.from({length: N}, (_, i) => `<i class="${i < pos ? 'done' : i === pos ? 'now' : ''}"></i>`).join('');
+  const last = pos === N - 1;
+  $('#passBtn').disabled = last;
+  $('#note').textContent = last ? 'Last cart! The crowd pushes you here, so this is your mango.' : '';
+  const chips = $('#chips');
+  chips.innerHTML = pos === 0 ? '<span class="empty">None yet</span>' : vals.slice(0, pos).map(v => `<span class="chip">${show(v)}</span>`).join('');
+}
+
+function attachSwipe(card){
+  let startX = 0, dx = 0, dragging = false;
+  const stampP = card.querySelector('.stamp.pass'), stampB = card.querySelector('.stamp.buy');
+  card.addEventListener('pointerdown', e => {
+    if (busy) return;
+    dragging = true; startX = e.clientX; dx = 0;
+    card.classList.add('dragging'); card.setPointerCapture(e.pointerId);
+  });
+  card.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    dx = e.clientX - startX;
+    if (pos === N - 1 && dx < 0) dx = dx / 4;           // resist on last card
+    card.style.transform = `translateX(${dx}px) rotate(${dx / 18}deg)`;
+    stampB.style.opacity = Math.max(0, Math.min(1, dx / 100));
+    stampP.style.opacity = Math.max(0, Math.min(1, -dx / 100));
+  });
+  const end = () => {
+    if (!dragging) return;
+    dragging = false; card.classList.remove('dragging');
+    if (dx > 100) decide('buy');
+    else if (dx < -100 && pos < N - 1) decide('pass');
+    else { card.style.transform = ''; stampB.style.opacity = 0; stampP.style.opacity = 0; }
+  };
+  card.addEventListener('pointerup', end);
+  card.addEventListener('pointercancel', end);
+}
+
+function decide(action){
+  if (busy || over) return;
+  if (action === 'pass' && pos === N - 1) return;
+  busy = true;
+  const card = $('#deck .card:not(.under)');
+  const dir = action === 'buy' ? 1 : -1;
+  card.querySelector(`.stamp.${action}`).style.opacity = 1;
+  card.style.transform = `translateX(${dir * 130}%) rotate(${dir * 22}deg)`;
+  card.style.opacity = 0;
+  setTimeout(() => {
+    busy = false;
+    if (action === 'buy') finish();
+    else { pos++; dealCard(); }
+  }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 320);
+}
+
+function finish(){
+  over = true; chosen = pos;
+  const won = chosen === best;
+  log.push({carts: N, boughtAt: chosen + 1, sweetestAt: best + 1, ruleAt: rulePick + 1, planAt: planPick + 1,
+            won, ruleWon: rulePick === best, planWon: planPick === best});
+
+  let head, emoji, line;
+  if (won){ head = 'Sweetest mango!'; emoji = '👑🥭'; line = `You bought the sweetest mango in the lane. It scored ${show(vals[best])}.`; }
+  else if (best < chosen){ head = 'Walked right past it'; emoji = '😬'; line = `The sweetest mango (${show(vals[best])}) was back at cart ${best + 1}.`; }
+  else { head = 'It was still ahead'; emoji = '🙈'; line = `The sweetest mango (${show(vals[best])}) was waiting at cart ${best + 1}.`; }
+
+  const verdict = (name, pick) => `<p><strong>${name}</strong> would have bought at cart ${pick + 1} (${show(vals[pick])}) ${pick === best ? 'and won. 🎉' : 'and missed.'}</p>`;
+  const slots = vals.map((v, i) => `<div class="slot${i === chosen ? ' mine' : ''}${i === best ? ' best' : ''}">
+      <span class="n">${i + 1}</span>${i === best ? '<span class="crown">👑</span>' : ''}${show(v)}
+      ${i === rulePick ? '<span class="tg r">37% rule</span>' : ''}${i === planPick ? '<span class="tg p">bar plan</span>' : ''}
+    </div>`).join('');
+
+  $('#done').innerHTML = `<div class="result" style="margin-top:18px">
+    <div class="big">${emoji}</div><h2>${head}</h2><p>${line}</p>
+    <div class="lane">${slots}</div>
+    <div class="legend"><span><b style="background:var(--mango)"></b>your mango</span><span>👑 sweetest</span></div>
+    <div class="verdicts">${verdict('The 37% rule', rulePick)}${verdict('The bar plan', planPick)}</div>
+    <button class="btn-big" id="again">Walk a new lane</button>
+  </div>`;
+  $('#play').hidden = true; $('#done').hidden = false;
+  document.querySelector('.intro').open = false;
+  $('#again').onclick = newLane; $('#again').focus();
+  updateScore();
+}
+
+function updateScore(){
+  const you = log.filter(r => r.won).length, rule = log.filter(r => r.ruleWon).length, plan = log.filter(r => r.planWon).length;
+  $('#s-lanes').textContent = log.length; $('#s-you').textContent = you; $('#s-rule').textContent = rule; $('#s-plan').textContent = plan;
+  const pct = x => Math.round(100 * x / log.length) + '%';
+  const r = $('#reflect');
+  if (!log.length) r.textContent = 'Finish a lane to start the scoreboard.';
+  else if (log.length < 10) r.textContent = `A few lanes is mostly luck. After 10 lanes, you'll see how the bar plan works. (${10 - log.length} to go)`;
+  else r.textContent = `Over ${log.length} lanes: you ${pct(you)}, the 37% rule ${pct(rule)}, the bar plan ${pct(plan)}. Why does knowing the scale change the best plan?`;
+  $('#explain').classList.toggle('show', log.length >= 10);
+}
+
+$('#bars').innerHTML = [39, 20, 10, 5, 4, 3, 2, 1].map(k => `<span>${k} ahead: ${(barFor(k) * 100).toFixed(0)}</span>`).join('') + '<span>last cart: take it</span>';
+
+$('#passBtn').onclick = () => decide('pass');
+$('#buyBtn').onclick = () => decide('buy');
+document.addEventListener('keydown', e => {
+  if (over || $('#play').hidden || e.target.tagName === 'SELECT') return;
+  if (e.key === 'ArrowLeft') decide('pass');
+  if (e.key === 'ArrowRight') decide('buy');
+});
+$('#count').onchange = () => {
+  if (!over && pos > 0 && !confirm('Leave this lane and start a new one?')){ $('#count').value = N; return; }
+  newLane();
+};
+$('#copy').onclick = async () => {
+  const rows = ['lane,carts,you_bought_at,rule_bought_at,bar_plan_bought_at,sweetest_at,you_won,rule_won,bar_plan_won',
+    ...log.map((r, i) => `${i+1},${r.carts},${r.boughtAt},${r.ruleAt},${r.planAt},${r.sweetestAt},${+r.won},${+r.ruleWon},${+r.planWon}`)];
+  try { await navigator.clipboard.writeText(rows.join('\n')); $('#copyNote').textContent = `Copied ${log.length} lanes.`; }
+  catch { $('#copyNote').textContent = 'Copying is blocked here. Open the page in its own tab and try again.'; }
+};
+$('#reset').onclick = () => { if (log.length && confirm('Clear all scores?')){ log = []; updateScore(); } };
+
+newLane(); updateScore();
+</script>
+</body>
+</html>

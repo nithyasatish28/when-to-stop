@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Find Your Project Partner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#CDE7FF;--line:#B5D8FA;--ink:#1F2340;--soft:#F2F7FF;--yes:#1FA971;--next:#FF5D8F;--gold:#FFC83D;--plan:#4C6FFF;--taken:#9AA3B8}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:17px/1.55 "Nunito",system-ui,sans-serif;min-height:100vh;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:28px 28px;background-attachment:fixed}
+h1,h2,h3{font-family:"Baloo 2",system-ui,sans-serif;line-height:1.05;margin:0}
+main{max-width:560px;margin:0 auto;padding:22px 16px 70px}
+button,select{font:inherit}
+button{cursor:pointer;border:0}
+button:focus-visible,select:focus-visible,summary:focus-visible{outline:4px solid var(--plan);outline-offset:3px}
+h1{font-size:2.3rem;font-weight:800}
+.panel{background:#fff;border:3px solid var(--ink);border-radius:20px;padding:14px 16px;box-shadow:0 5px 0 var(--ink)}
+.intro{margin-top:12px;font-size:.98rem}
+.intro p{margin:.35em 0}
+.intro summary{cursor:pointer;font-weight:800}
+
+.levels{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.lvl{background:#fff;border:3px solid var(--ink);border-radius:16px;padding:8px 10px;text-align:left;color:var(--ink);box-shadow:0 4px 0 var(--ink)}
+.lvl strong{display:block;font-family:"Baloo 2",sans-serif;font-size:1.05rem;line-height:1.1}
+.lvl span{font-size:.8rem;font-weight:700;opacity:.75}
+.lvl[aria-pressed="true"]{background:var(--gold)}
+.sizeRow{display:flex;justify-content:space-between;align-items:center;margin:14px 4px 6px;font-weight:800}
+.sizeRow select{background:#fff;border:2px solid var(--ink);border-radius:12px;padding:.15em .5em;font-weight:700;color:var(--ink)}
+
+.deck{position:relative;height:440px;touch-action:pan-y;margin-top:4px}
+.card{position:absolute;inset:0;background:#fff;border-radius:30px;border:3px solid var(--ink);box-shadow:0 8px 0 var(--ink);
+  display:flex;flex-direction:column;align-items:center;padding:20px 22px;user-select:none;cursor:grab;transition:transform .35s cubic-bezier(.2,.8,.3,1.2),opacity .3s}
+.card.dragging{transition:none;cursor:grabbing}
+.card.enter{transform:scale(.88) translateY(20px);opacity:0}
+.card.under{transform:scale(.94) translateY(16px);opacity:.55;pointer-events:none;box-shadow:0 4px 0 var(--ink);justify-content:center;font-size:3rem}
+.avatar{width:120px;height:120px}
+.name{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:1.9rem;line-height:1;margin-top:4px}
+.tags{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+.tags span{background:var(--soft);border:2px solid var(--ink);border-radius:999px;padding:0 .7em;font-size:.82rem;font-weight:800}
+.quote{font-style:italic;text-align:center;margin:10px 0 0;font-size:1rem;min-height:3em}
+.rank{margin-top:auto;width:100%;border:3px solid var(--ink);border-radius:16px;padding:8px;text-align:center;font-weight:800;font-size:1.1rem;background:var(--soft)}
+.rank.best{background:#D5F5E6;color:#0E6B45}
+.rank small{display:block;font-weight:700;font-size:.8rem;opacity:.75}
+.stamp{position:absolute;top:30px;font-family:"Baloo 2",sans-serif;font-weight:800;font-size:2.2rem;padding:0 .4em;border:5px solid;border-radius:14px;opacity:0;pointer-events:none;background:#fff}
+.stamp.next{left:18px;color:var(--next);transform:rotate(-14deg)}
+.stamp.ask{right:18px;color:var(--yes);transform:rotate(14deg)}
+.reply{position:absolute;inset:0;border-radius:27px;background:rgba(31,35,64,.88);color:#fff;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;font-weight:800;font-size:1.4rem}
+.reply.show{display:flex}
+.reply .em{font-size:3.4rem}
+
+.actions{display:flex;justify-content:center;gap:28px;margin-top:24px}
+.round{width:76px;height:76px;border-radius:50%;border:3px solid var(--ink);box-shadow:0 5px 0 var(--ink);font-size:2rem;display:grid;place-items:center;background:#fff}
+.round:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.round.next{color:var(--next)}
+.round.ask{background:var(--yes);color:#fff}
+.round:disabled{opacity:.35;cursor:not-allowed}
+.labels{display:flex;justify-content:center;gap:28px;font-weight:800;font-size:.85rem;margin-top:8px}
+.labels span{width:76px;text-align:center}
+.note{text-align:center;min-height:1.6em;font-weight:800;margin-top:8px}
+
+.met{margin-top:12px;background:rgba(255,255,255,.7);border-radius:16px;padding:10px 12px}
+.met h3{font-size:1rem;margin-bottom:6px}
+.faces{display:flex;flex-wrap:wrap;gap:6px}
+.face{width:44px;text-align:center;font-size:.62rem;font-weight:800;line-height:1.1;position:relative}
+.face svg{width:40px;height:40px;display:block;margin:0 auto}
+.face.taken svg{opacity:.4}
+.face .x{position:absolute;top:0;right:0;background:var(--taken);color:#fff;border-radius:50%;width:16px;height:16px;font-size:.7rem;line-height:16px}
+.faces .empty{font-size:.9rem;opacity:.6}
+
+.result{margin-top:14px;text-align:center}
+.result .big{font-size:3.4rem;line-height:1}
+.result h2{font-size:2rem}
+.result p{margin:.4em 0}
+.lineup{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:8px;margin:14px 0 6px}
+.slot{border:2px solid var(--ink);border-radius:14px;padding:4px 2px 6px;background:var(--soft);position:relative;font-size:.7rem;font-weight:800;line-height:1.15}
+.slot svg{width:42px;height:42px;display:block;margin:0 auto}
+.slot .rk{display:block;font-size:.85rem}
+.slot.mine{background:#FFE7A8;box-shadow:0 0 0 3px var(--gold)}
+.slot.best .crown{position:absolute;top:-12px;right:-4px;font-size:1.1rem}
+.slot.taken svg{opacity:.4}
+.slot .tg{display:block;border-radius:6px;color:#fff;margin:2px 3px 0;font-size:.58rem;padding:1px 0}
+.tg.p{background:var(--plan)}.tg.t{background:var(--taken)}
+.legend{font-size:.8rem;font-weight:700;opacity:.8}
+.verdict{text-align:left;background:var(--soft);border-radius:14px;padding:10px 12px;margin-top:10px}
+.verdict p{margin:.3em 0}
+.btn-big{background:var(--plan);color:#fff;border:3px solid var(--ink);box-shadow:0 5px 0 var(--ink);border-radius:999px;padding:.6em 1.6em;font-weight:800;font-size:1.1rem;margin-top:14px;width:100%}
+.btn-big:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+
+.board{margin-top:26px}
+.board h2{font-size:1.5rem}
+.scores{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0;text-align:center}
+.scores div{background:var(--soft);border-radius:14px;padding:8px 4px;font-size:.8rem;font-weight:700;line-height:1.25}
+.scores strong{display:block;font-family:"Baloo 2",sans-serif;font-size:1.8rem;line-height:1.1}
+.scores .y{background:#FFF1C7}.scores .p{background:#E1E8FF}
+.secret{background:var(--soft);border-radius:14px;padding:10px 12px;margin-top:8px}
+.secret p{margin:.3em 0}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
+.btn-small{background:#fff;border:2px solid var(--ink);border-radius:999px;padding:.3em 1em;font-weight:800;color:var(--ink)}
+.tiny{font-size:.82rem;opacity:.75}
+@media (max-width:420px){.deck{height:430px}.avatar{width:104px;height:104px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Find Your Project Partner 🤝</h1>
+
+  <details class="panel intro" open>
+    <summary>How to play</summary>
+    <p>It's project week. You meet your classmates one at a time. Swipe right to <strong>ask them to team up</strong>, or left to <strong>keep looking</strong>. Once you move on, you can't go back to someone.</p>
+    <p>After chatting, you can tell how someone compares with the people <em>you've already met</em>, but not with the people you haven't met yet.</p>
+    <p><strong>You win if you team up with the best partner in the whole class.</strong></p>
+  </details>
+
+  <div class="levels" role="group" aria-label="Level">
+    <button class="lvl" data-l="1" aria-pressed="true"><strong>Level 1</strong><span>Everyone says yes</span></button>
+    <button class="lvl" data-l="2" aria-pressed="false"><strong>Level 2</strong><span>Some already have a partner</span></button>
+  </div>
+  <p class="tiny" id="levelNote" style="margin:8px 4px 0;opacity:.9"></p>
+
+  <div id="play">
+    <div class="sizeRow"><span id="progress">Classmate 1 of 12</span>
+      <label>Class size <select id="size"><option selected>12</option><option>20</option></select></label>
+    </div>
+    <div class="deck" id="deck"></div>
+    <div class="actions">
+      <button class="round next" id="nextBtn" aria-label="Keep looking">➜</button>
+      <button class="round ask" id="askBtn" aria-label="Ask to team up">🤝</button>
+    </div>
+    <div class="labels"><span>Keep looking</span><span>Ask</span></div>
+    <div class="note" id="note" aria-live="polite"></div>
+    <div class="met"><h3>People you've met</h3><div class="faces" id="faces"><span class="empty">No one yet</span></div></div>
+  </div>
+
+  <div id="done" class="panel result" hidden></div>
+
+  <section class="panel board" id="board"></section>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const motionOK = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- personas (style tags describe how they work, not how good they are) ---------- */
+const PEOPLE = [
+  ['Aarav','Night owl','Loves slides','"Give me a deadline and I get creative."'],
+  ['Diya','Early bird','Makes checklists','"I colour-code everything. Sorry not sorry."'],
+  ['Kabir','Big-picture thinker','Sketches ideas','"What if we did it completely differently?"'],
+  ['Meera','Quiet planner','Great at research','"I found three papers on that already."'],
+  ['Rohan','Talks it out','Presenter','"I\'ll do the talking on demo day."'],
+  ['Ananya','Detail spotter','Proofreader','"There\'s a typo on slide four."'],
+  ['Farhan','Builder','Hands-on','"Let\'s just make a quick prototype."'],
+  ['Ishita','Organiser','Runs the group chat','"I\'ve made us a shared doc."'],
+  ['Vikram','Puzzle lover','Asks why','"But why does it work that way?"'],
+  ['Sneha','Artist','Makes it pretty','"Leave the design to me."'],
+  ['Arjun','Chill','Steady pace','"We\'ve got time. It\'ll be fine."'],
+  ['Zara','Debater','Tests ideas','"Let me argue the other side for a second."'],
+  ['Nikhil','Coder','Automates things','"I wrote a script for that."'],
+  ['Priya','Storyteller','Writes well','"Every project needs a good story."'],
+  ['Joel','Experimenter','Tries things','"Worst case, we learn something."'],
+  ['Tanvi','Time keeper','Sets reminders','"Quick check-in on Thursday?"'],
+  ['Aditya','Sporty','Energetic','"Can we meet after football?"'],
+  ['Lakshmi','Calm','Good listener','"What does everyone else think?"'],
+  ['Omar','Maker','Loves tools','"I can borrow a 3D printer."'],
+  ['Riya','Curious','Asks questions','"Can I ask the teacher something first?"'],
+  ['Dev','Joker','Keeps it fun','"I brought snacks for brainstorming."'],
+  ['Nandini','Planner','Makes timelines','"Here\'s a week-by-week plan."'],
+  ['Samuel','Explorer','Finds examples','"I saw something like this online."'],
+  ['Kavya','Focused','Deep worker','"Give me two quiet hours."'],
+];
+const SKIN = ['#F5D0B0','#E7B48A','#C98E5E','#9A6440','#6B4430'];
+const HAIR = ['#1B1B1B','#3B2417','#6B3E26','#A0522D','#2B2B55'];
+const SHIRT = ['#FF8A5B','#4C6FFF','#1FA971','#FFC83D','#B36BFF','#FF5D8F'];
+
+function avatar(i){
+  const skin = SKIN[(i * 3) % 5], hair = HAIR[(i * 7) % 5], shirt = SHIRT[i % 6], style = i % 5, glasses = i % 4 === 1;
+  const hairShapes = [
+    `<path d="M22 50 C20 22 80 22 78 50 C72 36 30 34 22 50Z" fill="${hair}"/>`,
+    `<path d="M18 80 C12 30 30 16 50 16 C70 16 88 30 82 80 L72 80 C74 44 66 36 50 36 C34 36 26 44 28 80Z" fill="${hair}"/>`,
+    `<circle cx="50" cy="14" r="11" fill="${hair}"/><path d="M22 48 C20 22 80 22 78 48 C70 34 30 34 22 48Z" fill="${hair}"/>`,
+    `<g fill="${hair}"><circle cx="28" cy="34" r="10"/><circle cx="42" cy="24" r="11"/><circle cx="58" cy="24" r="11"/><circle cx="72" cy="34" r="10"/><circle cx="22" cy="48" r="7"/><circle cx="78" cy="48" r="7"/></g>`,
+    `<path d="M24 46 C24 28 76 28 76 46 C68 38 32 38 24 46Z" fill="${hair}"/>`,
+  ];
+  const specs = glasses ? `<g fill="none" stroke="#1F2340" stroke-width="3"><circle cx="40" cy="54" r="8"/><circle cx="60" cy="54" r="8"/><path d="M48 54 h4"/></g>` : '';
+  return `<svg viewBox="0 0 100 100" aria-hidden="true">
+    <circle cx="50" cy="50" r="48" fill="#EAF3FF" stroke="#1F2340" stroke-width="3"/>
+    <path d="M18 96 C20 76 34 70 50 70 C66 70 80 76 82 96Z" fill="${shirt}" stroke="#1F2340" stroke-width="3"/>
+    <circle cx="50" cy="52" r="24" fill="${skin}" stroke="#1F2340" stroke-width="3"/>
+    ${hairShapes[style]}
+    <circle cx="41" cy="54" r="3" fill="#1F2340"/><circle cx="59" cy="54" r="3" fill="#1F2340"/>
+    <path d="M42 63 Q50 69 58 63" stroke="#1F2340" stroke-width="3" fill="none" stroke-linecap="round"/>
+    ${specs}
+  </svg>`;
+}
+
+/* ---------- game state ---------- */
+let level = 1, N = 12, lineup = [], pos = 0, over = false, busy = false, chosen = -1, planPick = -1;
+const logs = {1: [], 2: []};
+const REVEAL_AFTER = 8;
+const cutoff = () => level === 1 ? Math.round(N / Math.E) : Math.round(N / 4);   // 12→4/3, 20→7/5
+
+function shuffle(a){ for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+function newRound(){
+  N = +$('#size').value;
+  const ids = shuffle([...PEOPLE.keys()]).slice(0, N);
+  lineup = ids.map(id => ({id, skill: Math.random(), taken: level === 2 && Math.random() < 0.5}));
+  // rank in class: 1 = best
+  [...lineup].sort((a, b) => b.skill - a.skill).forEach((p, r) => p.classRank = r + 1);
+  pos = 0; over = false; busy = false; chosen = -1;
+  planPick = planChoice();
+  $('#play').hidden = false; $('#done').hidden = true;
+  $('#levelNote').textContent = level === 1
+    ? 'Everyone you ask will say yes.'
+    : 'About half the class already has a partner. You only find out when you ask.';
+  deal();
+  drawBoard();
+}
+
+function planChoice(){           // returns index or -1 (no partner)
+  const k = cutoff();
+  let top = -1;
+  for (let i = 0; i < k; i++) top = Math.max(top, lineup[i].skill);
+  for (let i = k; i < N; i++){
+    if (lineup[i].skill > top){
+      top = lineup[i].skill;
+      if (!lineup[i].taken) return i;
+    }
+  }
+  return level === 1 ? N - 1 : -1;
+}
+
+function rankAmongMet(i){        // 1 = best of the first i+1 people
+  const s = lineup[i].skill;
+  return 1 + lineup.slice(0, i).filter(p => p.skill > s).length;
+}
+
+function makeCard(i){
+  const p = lineup[i], per = PEOPLE[p.id], r = rankAmongMet(i), met = i + 1;
+  const c = document.createElement('div');
+  c.className = 'card';
+  const rankHTML = r === 1
+    ? `<div class="rank best">⭐ Best so far!<small>${met === 1 ? 'The first person you\'ve met' : `Better than all ${met - 1} people before`}</small></div>`
+    : `<div class="rank">#${r} of the ${met} people you've met<small>${r - 1} ${r - 1 === 1 ? 'person' : 'people'} you met earlier ${r - 1 === 1 ? 'was' : 'were'} a better fit</small></div>`;
+  c.innerHTML = `<span class="stamp next">NEXT</span><span class="stamp ask">ASK!</span>
+    <div class="avatar">${avatar(p.id)}</div>
+    <div class="name">${per[0]}</div>
+    <div class="tags"><span>${per[1]}</span><span>${per[2]}</span></div>
+    <p class="quote">${per[3]}</p>
+    ${rankHTML}
+    <div class="reply"><div class="em">😅</div>Sorry! I already have a partner.<small style="font-size:.9rem;font-weight:700;margin-top:6px;opacity:.8">Keep looking…</small></div>`;
+  c.setAttribute('role', 'group');
+  c.setAttribute('aria-label', `Classmate ${met} of ${N}: ${per[0]}. ${r === 1 ? 'Best so far.' : `Ranks ${r} of ${met} met.`}`);
+  return c;
+}
+
+function deal(){
+  const deck = $('#deck'); deck.innerHTML = '';
+  if (pos + 1 < N){ const u = document.createElement('div'); u.className = 'card under'; u.textContent = '👤'; deck.appendChild(u); }
+  const c = makeCard(pos); c.classList.add('enter'); deck.appendChild(c);
+  requestAnimationFrame(() => requestAnimationFrame(() => c.classList.remove('enter')));
+  swipe(c);
+  $('#progress').textContent = `Classmate ${pos + 1} of ${N}`;
+  const last = pos === N - 1;
+  $('#nextBtn').disabled = last;
+  $('#note').textContent = last ? 'Last classmate! You have to ask them.' : '';
+  drawFaces();
+}
+
+function drawFaces(){
+  const f = $('#faces');
+  if (pos === 0){ f.innerHTML = '<span class="empty">No one yet</span>'; return; }
+  f.innerHTML = lineup.slice(0, pos).map(p => `<div class="face${p.asked ? ' taken' : ''}">${avatar(p.id)}${p.asked ? '<span class="x">✕</span>' : ''}${PEOPLE[p.id][0]}</div>`).join('');
+}
+
+function swipe(card){
+  let x0 = 0, dx = 0, drag = false;
+  const sN = card.querySelector('.stamp.next'), sA = card.querySelector('.stamp.ask');
+  card.addEventListener('pointerdown', e => { if (busy) return; drag = true; x0 = e.clientX; dx = 0; card.classList.add('dragging'); card.setPointerCapture(e.pointerId); });
+  card.addEventListener('pointermove', e => {
+    if (!drag) return;
+    dx = e.clientX - x0; if (pos === N - 1 && dx < 0) dx /= 4;
+    card.style.transform = `translateX(${dx}px) rotate(${dx / 18}deg)`;
+    sA.style.opacity = Math.max(0, Math.min(1, dx / 100)); sN.style.opacity = Math.max(0, Math.min(1, -dx / 100));
+  });
+  const end = () => {
+    if (!drag) return; drag = false; card.classList.remove('dragging');
+    if (dx > 100) act('ask'); else if (dx < -100 && pos < N - 1) act('next');
+    else { card.style.transform = ''; sA.style.opacity = 0; sN.style.opacity = 0; }
+  };
+  card.addEventListener('pointerup', end); card.addEventListener('pointercancel', end);
+}
+
+function flyOut(card, dir, then){
+  card.style.transform = `translateX(${dir * 130}%) rotate(${dir * 22}deg)`; card.style.opacity = 0;
+  setTimeout(then, motionOK ? 320 : 0);
+}
+
+function act(kind){
+  if (busy || over) return;
+  if (kind === 'next' && pos === N - 1) return;
+  busy = true;
+  const card = $('#deck .card:not(.under)');
+  if (kind === 'next'){
+    card.querySelector('.stamp.next').style.opacity = 1;
+    flyOut(card, -1, () => { busy = false; pos++; deal(); });
+    return;
+  }
+  const p = lineup[pos];
+  if (p.taken){
+    p.asked = true;
+    card.style.transform = ''; card.querySelector('.stamp.ask').style.opacity = 0;
+    card.querySelector('.reply').classList.add('show');
+    setTimeout(() => {
+      if (pos === N - 1){ busy = false; finish(-1); return; }
+      flyOut(card, -1, () => { busy = false; pos++; deal(); });
+    }, motionOK ? 1400 : 700);
+    return;
+  }
+  card.querySelector('.stamp.ask').style.opacity = 1;
+  flyOut(card, 1, () => { busy = false; finish(pos); });
+}
+
+/* ---------- results ---------- */
+function finish(pick){
+  over = true; chosen = pick;
+  const best = lineup.findIndex(p => p.classRank === 1);
+  const won = pick === best, planWon = planPick === best;
+  logs[level].push({size: N, you: pick + 1, youRank: pick >= 0 ? lineup[pick].classRank : 0, plan: planPick + 1, planRank: planPick >= 0 ? lineup[planPick].classRank : 0, bestAt: best + 1, won, planWon});
+
+  const nm = i => PEOPLE[lineup[i].id][0];
+  let emoji, head, line;
+  if (pick < 0){ emoji = '🙃'; head = 'No partner!'; line = 'Everyone you asked was already taken, and you ran out of classmates.'; }
+  else if (won){ emoji = '🏆'; head = 'Dream team!'; line = `${nm(pick)} was the best partner in the whole class.`; }
+  else {
+    emoji = '🙂'; head = `You teamed up with ${nm(pick)}`;
+    line = `${nm(pick)} ranked #${lineup[pick].classRank} in the class. The best partner was ${nm(best)}, ${best < pick ? 'who you had already walked past' : 'who you hadn\'t met yet'}${lineup[best].taken ? ' (and they were already taken anyway)' : ''}.`;
+  }
+  const k = cutoff();
+  const planLine = planPick < 0
+    ? `<p><strong>The smart plan</strong> chatted with the first ${k} people, then asked every "best so far" after that. They were all taken, so it ended up without a partner.</p>`
+    : `<p><strong>The smart plan</strong> would have teamed up with ${nm(planPick)} (#${lineup[planPick].classRank} in class) ${planWon ? 'and found the best partner. 🎉' : 'and missed the best.'}</p>`;
+
+  const slots = lineup.map((p, i) => `<div class="slot${i === pick ? ' mine' : ''}${p.classRank === 1 ? ' best' : ''}${level === 2 && p.taken ? ' taken' : ''}">
+      ${p.classRank === 1 ? '<span class="crown">👑</span>' : ''}${avatar(p.id)}${PEOPLE[p.id][0]}<span class="rk">#${p.classRank}</span>
+      ${i === planPick ? '<span class="tg p">plan</span>' : ''}${level === 2 && p.taken ? '<span class="tg t">taken</span>' : ''}
+    </div>`).join('');
+
+  $('#done').innerHTML = `<div class="big">${emoji}</div><h2>${head}</h2><p>${line}</p>
+    <div class="verdict">${planLine}</div>
+    <h3 style="margin-top:14px;text-align:left">The whole class, in the order you met them</h3>
+    <div class="lineup">${slots}</div>
+    <div class="legend">#1 is the best partner in the class. Yellow is who you teamed up with.</div>
+    <button class="btn-big" id="again">Play again</button>`;
+  $('#play').hidden = true; $('#done').hidden = false;
+  document.querySelector('.intro').open = false;
+  $('#again').onclick = newRound; $('#again').focus();
+  drawBoard();
+}
+
+function drawBoard(){
+  const L = logs[level], n = L.length;
+  const you = L.filter(r => r.won).length, plan = L.filter(r => r.planWon).length;
+  const left = REVEAL_AFTER - n;
+  const k12 = level === 1 ? 4 : 3, k20 = level === 1 ? 7 : 5;
+  let secret;
+  if (n < REVEAL_AFTER) secret = `<p>Play ${left} more round${left === 1 ? '' : 's'} on this level to see how the smart plan decides.</p>`;
+  else if (level === 1) secret = `<p><strong>The smart plan (the 37% rule):</strong> chat with the first 37% of the class without asking anyone. That's ${k12} people in a class of 12, or ${k20} in a class of 20. Then ask the first person who's the best so far.</p><p>It finds the best partner about 37–40% of the time.</p>`;
+  else secret = `<p><strong>The smart plan for Level 2:</strong> chat with just the first <strong>25%</strong> of the class (${k12} of 12, or ${k20} of 20). Then ask <em>every</em> person who's the best so far, until someone says yes.</p><p>It starts asking earlier than the 37% rule. Why? Some people will say no, so you need more chances to ask. Even so, it finds the best partner only about 25% of the time.</p>`;
+
+  $('#board').innerHTML = `<h2>Level ${level} scoreboard</h2>
+    <div class="scores">
+      <div><strong>${n}</strong>rounds played</div>
+      <div class="y"><strong>${you}</strong>times you found the best</div>
+      <div class="p"><strong>${plan}</strong>times the smart plan did</div>
+    </div>
+    <p class="tiny" style="margin:0">A few rounds is mostly luck. Look at the pattern over many rounds.</p>
+    <div class="secret">${secret}</div>
+    <div class="row"><button class="btn-small" id="copy">Copy results</button><span class="tiny" id="copyNote">Paste into a shared sheet to pool the class's rounds.</span></div>`;
+
+  $('#copy').onclick = async () => {
+    const out = ['level,round,class_size,you_picked_position,you_picked_class_rank,plan_picked_position,plan_class_rank,best_position,you_won,plan_won'];
+    [1, 2].forEach(l => logs[l].forEach((r, i) => out.push(`${l},${i+1},${r.size},${r.you},${r.youRank},${r.plan},${r.planRank},${r.bestAt},${+r.won},${+r.planWon}`)));
+    try { await navigator.clipboard.writeText(out.join('\n')); $('#copyNote').textContent = 'Copied.'; }
+    catch { $('#copyNote').textContent = 'Copying is blocked here. Open the page in its own tab and try again.'; }
+  };
+}
+
+/* ---------- controls ---------- */
+document.querySelectorAll('.lvl').forEach(b => b.onclick = () => {
+  if (!over && pos > 0 && !confirm('Leave this round and switch level?')) return;
+  level = +b.dataset.l;
+  document.querySelectorAll('.lvl').forEach(x => x.setAttribute('aria-pressed', x === b));
+  newRound();
+});
+$('#size').onchange = () => { if (!over && pos > 0 && !confirm('Start a new round with a different class size?')){ $('#size').value = N; return; } newRound(); };
+$('#nextBtn').onclick = () => act('next');
+$('#askBtn').onclick = () => act('ask');
+document.addEventListener('keydown', e => {
+  if (over || $('#play').hidden || e.target.tagName === 'SELECT') return;
+  if (e.key === 'ArrowLeft') act('next');
+  if (e.key === 'ArrowRight') act('ask');
+});
+
+newRound();
+</script>
+</body>
+</html>

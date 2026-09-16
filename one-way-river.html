@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The One-Way River</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --mist:#DCE8EB; --ink:#1C3144; --river:#2B7690; --deep:#1F5C72;
+  --gold:#E0A526; --sand:#F2DFA7; --berry:#B23A48; --leaf:#2E7D55;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--mist);color:var(--ink);font:17px/1.6 "Atkinson Hyperlegible",system-ui,sans-serif}
+h1,h2{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.05;margin:0}
+h1{font-size:clamp(2.4rem,7vw,4.6rem);font-weight:800;letter-spacing:-.025em}
+h2{font-size:clamp(1.4rem,3vw,1.8rem);font-weight:800}
+main{max-width:1000px;margin:0 auto;padding:36px 20px 90px}
+p{max-width:64ch}
+header p{margin:.7em 0 0;font-size:1.08rem}
+button,select,input{font:inherit}
+button{cursor:pointer;border:0;border-radius:999px;padding:.7em 1.4em;font-weight:700}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+button:disabled{opacity:.4;cursor:not-allowed}
+
+.stage{margin-top:30px;background:var(--river);color:#fff;border-radius:34px 10px 34px 10px;padding:22px 0 26px;overflow:hidden;
+  background-image:repeating-linear-gradient(170deg,transparent 0 38px,rgba(255,255,255,.06) 38px 40px)}
+.stage-top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;padding:0 24px}
+.stage-top label{display:flex;gap:8px;align-items:center;cursor:pointer}
+.stage select{background:var(--deep);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:10px;padding:.35em .6em}
+.progress{font-weight:700;margin-right:auto}
+
+.track{display:flex;gap:16px;overflow-x:auto;padding:50px 28px 30px;scrollbar-color:rgba(255,255,255,.4) transparent}
+.island{flex:0 0 96px;height:96px;display:grid;place-items:center;position:relative;font-weight:700;text-align:center;
+  background:var(--sand);color:var(--ink);border-radius:52% 48% 44% 56% / 58% 46% 54% 42%;transition:opacity .25s,background .25s}
+.island:nth-child(even){border-radius:46% 54% 58% 42% / 44% 58% 42% 56%;margin-top:10px}
+.island.fog{background:rgba(255,255,255,.14);color:rgba(255,255,255,.75);font-size:1.6rem}
+.island.passed{opacity:.5}
+.island.here{box-shadow:0 0 0 4px #fff}
+.island.boat::before{content:"⛵";position:absolute;top:-44px;font-size:30px}
+.island.chosen{background:var(--gold);box-shadow:0 0 0 4px #fff}
+.island.best::after{content:"👑";position:absolute;bottom:-18px;font-size:22px}
+.island .num{padding:0 6px;line-height:1.1}
+.island .idx{position:absolute;top:8px;font-size:.7rem;font-weight:400;opacity:.65}
+.island .badge{position:absolute;top:-12px;right:-8px;background:var(--ink);color:#fff;font-size:.7rem;border-radius:8px;padding:1px 6px}
+
+.controls{display:flex;flex-wrap:wrap;gap:12px;padding:0 24px;align-items:center}
+.btn-land{background:var(--gold);color:var(--ink)}
+.btn-drift{background:transparent;color:#fff;box-shadow:inset 0 0 0 2px #fff}
+.btn-new{background:#fff;color:var(--ink)}
+.message{padding:14px 24px 0;min-height:3.2em;font-size:1.08rem;max-width:72ch}
+.message p{margin:0 0 .3em}
+
+.panel{background:#fff;border-radius:18px;padding:24px;margin-top:28px}
+.score{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin:14px 0 6px}
+.score div{font-size:.95rem}
+.score strong{display:block;font-family:"Bricolage Grotesque",sans-serif;font-size:2.2rem;line-height:1.1}
+.score .you strong{color:#9a6a00}
+.score .rule strong{color:var(--river)}
+.hint{font-size:.95rem;color:#4a5d6d;margin:12px 0 0}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:16px}
+.btn-plain{background:var(--mist);color:var(--ink)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>The One-Way River</h1>
+  <p>Your boat drifts past a row of islands, one at a time. Each island has a chest of coins. Land on one island and your voyage ends there. The current is too strong to paddle back.</p>
+  <p><strong>You win only if you land on the richest island of the whole river.</strong> Coin amounts change wildly between voyages, so you can only judge a chest against the ones you've already seen.</p>
+  <p>After every voyage, you'll see what the 37% rule would have done on the same river.</p>
+</header>
+
+<div class="stage" aria-label="River game">
+  <div class="stage-top">
+    <span class="progress" id="progress">Island 1 of 20</span>
+    <label>Islands
+      <select id="count"><option>10</option><option selected>20</option><option>40</option><option>100</option></select>
+    </label>
+  </div>
+  <div class="track" id="track"></div>
+  <div class="controls">
+    <button class="btn-land" id="land">Land here</button>
+    <button class="btn-drift" id="drift">Keep drifting</button>
+    <button class="btn-new" id="new" hidden>Start a new voyage</button>
+  </div>
+  <div class="message" id="message" aria-live="polite"></div>
+</div>
+
+<div class="panel">
+  <h2>You against the rule</h2>
+  <div class="score">
+    <div><strong id="s-voy">0</strong>voyages played</div>
+    <div class="you"><strong id="s-you">0</strong>richest islands you found</div>
+    <div class="rule"><strong id="s-rule">0</strong>richest islands the rule found on the same rivers</div>
+  </div>
+  <p class="hint" id="reflect">Play a voyage to start the scoreboard.</p>
+  <div class="row">
+    <button class="btn-plain" id="copy">Copy my results</button>
+    <button class="btn-plain" id="reset">Reset scores</button>
+    <span class="hint" id="copyNote" style="margin:0">Paste into a shared sheet to pool the whole class's voyages.</span>
+  </div>
+</div>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+let N = 20, vals = [], pos = 0, over = false, chosen = -1, best = -1, rulePick = -1;
+let log = [];
+
+const fmt = v => v.toLocaleString('en-US');
+const cutoffFor = n => Math.round(n / Math.E);          // 10→4, 20→7, 40→15, 100→37
+
+function ruleChoice(v){
+  const k = cutoffFor(v.length);
+  const bar = Math.max(...v.slice(0, k));
+  for (let i = k; i < v.length; i++) if (v[i] > bar) return i;
+  return v.length - 1;
+}
+
+function newVoyage(){
+  N = +$('#count').value;
+  const scale = Math.pow(10, 1 + Math.random() * 4);
+  const seen = new Set(); vals = [];
+  while (vals.length < N){
+    const v = Math.max(1, Math.round(scale * (0.02 + Math.random() * 20)));
+    if (!seen.has(v)){ seen.add(v); vals.push(v); }
+  }
+  pos = 0; over = false; chosen = -1;
+  best = vals.indexOf(Math.max(...vals));
+  rulePick = ruleChoice(vals);
+  $('#new').hidden = true; $('#land').hidden = false; $('#drift').hidden = false;
+  render();
+}
+
+function render(){
+  const t = $('#track'); t.innerHTML = '';
+
+  vals.forEach((v, i) => {
+    const d = document.createElement('div');
+    d.className = 'island';
+    const show = over || i <= pos;
+    if (over){
+      if (i === chosen) d.classList.add('chosen', 'boat');
+      if (i === best) d.classList.add('best');
+      if (i !== chosen) d.style.opacity = i > chosen ? .85 : .6;
+    } else if (i < pos) d.classList.add('passed');
+    else if (i === pos) d.classList.add('here', 'boat');
+    else d.classList.add('fog');
+
+    const label = fmt(v);
+    let badge = '';
+    if (over && i === rulePick) badge = '<span class="badge">rule</span>';
+    d.innerHTML = `<span class="idx">${i + 1}</span><span class="num" style="font-size:${label.length > 7 ? .82 : label.length > 5 ? .95 : 1.1}rem">${show ? label : '?'}</span>${badge}`;
+    d.setAttribute('aria-label', show ? `Island ${i+1}: ${label} coins` : `Island ${i+1}: not reached yet`);
+    t.appendChild(d);
+  });
+
+  const focus = t.children[over ? chosen : pos];
+  if (focus) t.scrollLeft = focus.offsetLeft - t.clientWidth / 2 + 48;
+
+  $('#progress').textContent = over ? `Landed on island ${chosen + 1} of ${N}` : `Island ${pos + 1} of ${N}`;
+  $('#drift').disabled = over || pos === N - 1;
+
+  // Message while sailing
+  if (!over){
+    let m = 'Land here, or keep drifting?';
+    if (pos === N - 1) m = 'This is the last island. The current carries you here, so you have to land.';
+    $('#message').innerHTML = `<p>${m}</p>`;
+  }
+}
+
+function land(){
+  if (over) return;
+  chosen = pos; over = true;
+  const won = chosen === best, ruleWon = rulePick === best;
+  log.push({islands: N, landedAt: chosen + 1, richestAt: best + 1, ruleAt: rulePick + 1, won, ruleWon});
+
+  let you;
+  if (won) you = `You found the richest island! Its chest held ${fmt(vals[best])} coins.`;
+  else if (best < chosen) you = `You missed. The richest island was number ${best + 1} (${fmt(vals[best])} coins), and you'd already drifted past it.`;
+  else you = `You missed. The richest island was number ${best + 1} (${fmt(vals[best])} coins), still further down the river.`;
+
+  const k = cutoffFor(N);
+  let rule = `The 37% rule would have scouted the first ${k} islands, then landed on island ${rulePick + 1}`;
+  if (rulePick === N - 1 && best < k) rule = `The 37% rule would have scouted the first ${k} islands, but the richest one was in that zone, so nothing beat the bar and it got stuck with the last island`;
+  rule += ruleWon ? ', and found the richest island.' : (rulePick === N - 1 && best < k ? '.' : ', and missed.');
+
+  $('#message').innerHTML = `<p>${you}</p><p>${rule}</p>`;
+  $('#land').hidden = true; $('#drift').hidden = true; $('#new').hidden = false;
+  render(); $('#new').focus(); updateScore();
+}
+
+function drift(){ if (!over && pos < N - 1){ pos++; render(); } }
+
+function updateScore(){
+  const you = log.filter(r => r.won).length, rule = log.filter(r => r.ruleWon).length;
+  $('#s-voy').textContent = log.length;
+  $('#s-you').textContent = you;
+  $('#s-rule').textContent = rule;
+  const r = $('#reflect');
+  if (log.length === 0) r.textContent = 'Play a voyage to start the scoreboard.';
+  else if (log.length < 10) r.textContent = 'A handful of voyages is mostly luck. Keep going to see a clearer picture.';
+  else r.textContent = `Over ${log.length} voyages, the rule won ${Math.round(100 * rule / log.length)}% of the time and you won ${Math.round(100 * you / log.length)}%. The rule is the best plan, but it still misses most voyages. How does that feel as a player?`;
+}
+
+$('#copy').onclick = async () => {
+  const rows = ['voyage,islands,you_landed_at,rule_landed_at,richest_at,you_won,rule_won',
+    ...log.map((r, i) => `${i+1},${r.islands},${r.landedAt},${r.ruleAt},${r.richestAt},${r.won ? 1 : 0},${r.ruleWon ? 1 : 0}`)];
+  try { await navigator.clipboard.writeText(rows.join('\n')); $('#copyNote').textContent = `Copied ${log.length} voyages.`; }
+  catch { $('#copyNote').textContent = 'Copying is blocked here. Open the page in its own browser tab and try again.'; }
+};
+$('#reset').onclick = () => { if (log.length && confirm('Clear all scores?')){ log = []; updateScore(); } };
+
+$('#land').onclick = land;
+$('#drift').onclick = drift;
+$('#new').onclick = newVoyage;
+$('#count').onchange = () => {
+  if (!over && pos > 0 && !confirm('Abandon this voyage and start a new river?')){ $('#count').value = N; return; }
+  newVoyage();
+};
+
+newVoyage(); updateScore();
+</script>
+</body>
+</html>
