@@ -38,11 +38,16 @@ h1{font-size:2.3rem;font-weight:800}
 .card.dragging{transition:none;cursor:grabbing}
 .card.enter{transform:scale(.88) translateY(20px);opacity:0}
 .card.under{transform:scale(.94) translateY(16px);opacity:.55;pointer-events:none;box-shadow:0 4px 0 var(--ink);justify-content:center;font-size:3rem}
-.avatar{width:120px;height:120px}
+.avatar{width:96px;height:96px}
 .name{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:1.9rem;line-height:1;margin-top:4px}
 .tags{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:8px}
 .tags span{background:var(--soft);border:2px solid var(--ink);border-radius:999px;padding:0 .7em;font-size:.82rem;font-weight:800}
-.quote{font-style:italic;text-align:center;margin:10px 0 0;font-size:1rem;min-height:3em}
+.quote{font-style:italic;text-align:center;margin:6px 0 0;font-size:.95rem}
+.fit{margin-top:8px;text-align:center;line-height:1}
+.fit small{display:block;font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;opacity:.65;margin-bottom:2px}
+.fit b{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:2.4rem}
+.face .sc{display:block;font-size:.6rem;opacity:.75}
+.slot .sc{display:block;font-size:.72rem}
 .rank{margin-top:auto;width:100%;border:3px solid var(--ink);border-radius:16px;padding:8px;text-align:center;font-weight:800;font-size:1.1rem;background:var(--soft)}
 .rank.best{background:#D5F5E6;color:#0E6B45}
 .rank small{display:block;font-weight:700;font-size:.8rem;opacity:.75}
@@ -102,7 +107,7 @@ h1{font-size:2.3rem;font-weight:800}
 .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
 .btn-small{background:#fff;border:2px solid var(--ink);border-radius:999px;padding:.3em 1em;font-weight:800;color:var(--ink)}
 .tiny{font-size:.82rem;opacity:.75}
-@media (max-width:420px){.deck{height:430px}.avatar{width:104px;height:104px}}
+@media (max-width:420px){.deck{height:440px}.avatar{width:84px;height:84px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -113,7 +118,7 @@ h1{font-size:2.3rem;font-weight:800}
   <details class="panel intro" open>
     <summary>How to play</summary>
     <p>It's project week. You meet your classmates one at a time. Swipe right to <strong>ask them to team up</strong>, or left to <strong>keep looking</strong>. Once you move on, you can't go back to someone.</p>
-    <p>After chatting, you can tell how someone compares with the people <em>you've already met</em>, but not with the people you haven't met yet.</p>
+    <p>Each classmate has a <strong>fit score</strong>. But the scoring changes wildly every round: in one class, scores might run to 400, in the next to 90,000. So a score only tells you how someone compares with the people <em>you've already met</em>.</p>
     <p><strong>You win if you team up with the best partner in the whole class.</strong></p>
   </details>
 
@@ -209,7 +214,13 @@ function shuffle(a){ for (let i = a.length - 1; i > 0; i--){ const j = Math.floo
 function newRound(){
   N = +$('#size').value;
   const ids = shuffle([...PEOPLE.keys()]).slice(0, N);
-  lineup = ids.map(id => ({id, skill: Math.random(), taken: level === 2 && Math.random() < 0.5}));
+  const scale = Math.pow(10, 1 + Math.random() * 4);
+  const used = new Set();
+  lineup = ids.map(id => {
+    let v; do { v = Math.max(1, Math.round(scale * (0.02 + Math.random() * 20))); } while (used.has(v));
+    used.add(v);
+    return {id, skill: v, taken: level === 2 && Math.random() < 0.5};
+  });
   // rank in class: 1 = best
   [...lineup].sort((a, b) => b.skill - a.skill).forEach((p, r) => p.classRank = r + 1);
   pos = 0; over = false; busy = false; chosen = -1;
@@ -251,11 +262,12 @@ function makeCard(i){
     <div class="avatar">${avatar(p.id)}</div>
     <div class="name">${per[0]}</div>
     <div class="tags"><span>${per[1]}</span><span>${per[2]}</span></div>
+    <div class="fit"><small>Fit score</small><b>${p.skill.toLocaleString('en-IN')}</b></div>
     <p class="quote">${per[3]}</p>
     ${rankHTML}
     <div class="reply"><div class="em">😅</div>Sorry! I already have a partner.<small style="font-size:.9rem;font-weight:700;margin-top:6px;opacity:.8">Keep looking…</small></div>`;
   c.setAttribute('role', 'group');
-  c.setAttribute('aria-label', `Classmate ${met} of ${N}: ${per[0]}. ${r === 1 ? 'Best so far.' : `Ranks ${r} of ${met} met.`}`);
+  c.setAttribute('aria-label', `Classmate ${met} of ${N}: ${per[0]}. Fit score ${p.skill}. ${r === 1 ? 'Best so far.' : `Ranks ${r} of ${met} met.`}`);
   return c;
 }
 
@@ -275,7 +287,7 @@ function deal(){
 function drawFaces(){
   const f = $('#faces');
   if (pos === 0){ f.innerHTML = '<span class="empty">No one yet</span>'; return; }
-  f.innerHTML = lineup.slice(0, pos).map(p => `<div class="face${p.asked ? ' taken' : ''}">${avatar(p.id)}${p.asked ? '<span class="x">✕</span>' : ''}${PEOPLE[p.id][0]}</div>`).join('');
+  f.innerHTML = lineup.slice(0, pos).map(p => `<div class="face${p.asked ? ' taken' : ''}">${avatar(p.id)}${p.asked ? '<span class="x">✕</span>' : ''}${PEOPLE[p.id][0]}<span class="sc">${p.skill.toLocaleString('en-IN')}</span></div>`).join('');
 }
 
 function swipe(card){
@@ -347,7 +359,7 @@ function finish(pick){
     : `<p><strong>The smart plan</strong> would have teamed up with ${nm(planPick)} (#${lineup[planPick].classRank} in class) ${planWon ? 'and found the best partner. 🎉' : 'and missed the best.'}</p>`;
 
   const slots = lineup.map((p, i) => `<div class="slot${i === pick ? ' mine' : ''}${p.classRank === 1 ? ' best' : ''}${level === 2 && p.taken ? ' taken' : ''}">
-      ${p.classRank === 1 ? '<span class="crown">👑</span>' : ''}${avatar(p.id)}${PEOPLE[p.id][0]}<span class="rk">#${p.classRank}</span>
+      ${p.classRank === 1 ? '<span class="crown">👑</span>' : ''}${avatar(p.id)}${PEOPLE[p.id][0]}<span class="sc">${p.skill.toLocaleString('en-IN')}</span><span class="rk">#${p.classRank}</span>
       ${i === planPick ? '<span class="tg p">plan</span>' : ''}${level === 2 && p.taken ? '<span class="tg t">taken</span>' : ''}
     </div>`).join('');
 
@@ -355,7 +367,7 @@ function finish(pick){
     <div class="verdict">${planLine}</div>
     <h3 style="margin-top:14px;text-align:left">The whole class, in the order you met them</h3>
     <div class="lineup">${slots}</div>
-    <div class="legend">#1 is the best partner in the class. Yellow is who you teamed up with.</div>
+    <div class="legend">The number under each name is their fit score. #1 is the best partner in the class. Yellow is who you teamed up with.</div>
     <button class="btn-big" id="again">Play again</button>`;
   $('#play').hidden = true; $('#done').hidden = false;
   document.querySelector('.intro').open = false;
