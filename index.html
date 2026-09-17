@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>When to Stop: Optimal Stopping Games</title>
+<title>Algorithms to Live By: Classroom Games</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
@@ -23,7 +23,16 @@ button:focus-visible{outline:4px solid var(--partner);outline-offset:3px}
 .kicker{font-weight:800;text-transform:uppercase;letter-spacing:.08em;font-size:.8rem;opacity:.7}
 .home h1{font-size:clamp(2.6rem,8vw,4.8rem);font-weight:800;letter-spacing:-.02em;margin-top:4px}
 .lead{max-width:60ch;font-size:1.1rem;margin:.6em 0 0}
-.path{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:22px;margin-top:34px}
+.path{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;margin-top:34px}
+.algo{margin-top:44px}
+.algo-head{display:flex;gap:14px;align-items:flex-start;border-bottom:3px solid var(--ink);padding-bottom:12px}
+.algo-badge{flex:none;background:var(--ink);color:var(--bg);font-family:"Baloo 2","Nunito",sans-serif;font-weight:800;font-size:1.05rem;border-radius:999px;padding:.2em .9em;margin-top:4px}
+.algo-head h2{font-size:2rem;font-weight:800}
+.algo-head p{margin:.2em 0 0;max-width:60ch}
+.algo .path{margin-top:20px}
+.notes-h{font-size:1.1rem;margin-top:16px}
+.tabs .sep{width:2px;align-self:stretch;background:var(--ink);opacity:.35;margin:4px 2px}
+
 .game{background:var(--card);border:3px solid var(--ink);border-radius:26px;box-shadow:0 7px 0 var(--ink);overflow:hidden;display:flex;flex-direction:column;text-align:left;color:var(--ink);padding:0}
 .game:hover{transform:translateY(-3px);box-shadow:0 10px 0 var(--ink)}
 .game:active{transform:translateY(4px);box-shadow:0 3px 0 var(--ink)}
@@ -31,11 +40,12 @@ button:focus-visible{outline:4px solid var(--partner);outline-offset:3px}
 .art .step{position:absolute;top:12px;left:14px;background:#fff;color:#231F3A;border:3px solid #231F3A;border-radius:999px;width:38px;height:38px;display:grid;place-items:center;font-family:"Baloo 2",sans-serif;font-weight:800;font-size:1.2rem}
 .g-river .art{background:var(--river);background-image:repeating-linear-gradient(170deg,transparent 0 22px,rgba(255,255,255,.12) 22px 25px)}
 .g-mango .art{background:#BFE8C8}
+.g-explore .art{background:#E9E2D0;background-image:repeating-linear-gradient(0deg,transparent 0 22px,rgba(43,42,38,.08) 22px 23px)}
 .g-partner .art{background:#CDE7FF;background-image:linear-gradient(#B5D8FA 1px,transparent 1px),linear-gradient(90deg,#B5D8FA 1px,transparent 1px);background-size:20px 20px}
 .body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:6px;flex:1}
 .body h2{font-size:1.7rem}
 .twist{font-weight:800;font-size:.95rem}
-.g-river .twist{color:var(--river)} .g-mango .twist{color:#C46F00} .g-partner .twist{color:var(--partner)}
+.g-river .twist{color:var(--river)} .g-mango .twist{color:#C46F00} .g-partner .twist{color:var(--partner)} .g-explore .twist{color:#3F6B5C}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .twist{color:inherit!important;opacity:.85}}
 .body p{margin:0}
 .play{margin-top:auto;padding-top:10px;font-weight:800}
@@ -65,11 +75,19 @@ button:focus-visible{outline:4px solid var(--partner);outline-offset:3px}
 </head>
 <body>
 <div class="home" id="home">
-  <div class="kicker">Algorithms to Live By · Optimal stopping</div>
-  <h1>When to Stop</h1>
-  <p class="lead">Three games about one hard question: when should you stop looking and commit? Each game changes one rule, and the best strategy changes with it. Play them in order.</p>
+  <div class="kicker">Classroom games</div>
+  <h1>Algorithms to Live By</h1>
+  <p class="lead">Games for exploring algorithms from the book. Play the games under each algorithm in order.</p>
 
-  <div class="path">
+  <section class="algo" aria-labelledby="algo1">
+    <div class="algo-head">
+      <span class="algo-badge">Algo 1</span>
+      <div>
+        <h2 id="algo1">Optimal stopping</h2>
+        <p>When should you stop looking and commit? Each game changes one rule, and the best strategy changes with it.</p>
+      </div>
+    </div>
+    <div class="path">
     <button class="game g-river" data-game="river">
       <div class="art"><span class="step">1</span>⛵</div>
       <div class="body">
@@ -97,10 +115,33 @@ button:focus-visible{outline:4px solid var(--partner);outline-offset:3px}
         <div class="play"><span>Play →</span></div>
       </div>
     </button>
-  </div>
+    </div>
+  </section>
+
+  <section class="algo" aria-labelledby="algo2">
+    <div class="algo-head">
+      <span class="algo-badge">Algo 2</span>
+      <div>
+        <h2 id="algo2">Explore vs. exploit</h2>
+        <p>Should you stick with what you know, or try something new?</p>
+      </div>
+    </div>
+    <div class="path">
+    <button class="game g-explore" data-game="explore">
+      <div class="art"><span class="step">1</span>🃏</div>
+      <div class="body">
+        <h2>Explore vs. Exploit</h2>
+        <div class="twist">New question: stay or switch?</div>
+        <p>Draw cards from one of eight stacks. Keep drawing from a stack you know, or pay to try another that might be better. You won't know how many rounds are left.</p>
+        <div class="play"><span>Play →</span></div>
+      </div>
+    </button>
+    </div>
+  </section>
 
   <details class="notes">
     <summary>For teachers: what each game shows</summary>
+    <h3 class="notes-h">Algo 1: Optimal stopping</h3>
     <div class="notes-wrap">
     <table>
       <thead><tr><th>Game</th><th>What changes</th><th>Best strategy</th><th>Best win rate</th><th>Discussion question</th></tr></thead>
@@ -111,7 +152,16 @@ button:focus-visible{outline:4px solid var(--partner);outline-offset:3px}
       </tbody>
     </table>
     </div>
-    <p>Each game has a "Copy results" button so you can pool the whole class's rounds in a shared sheet. Scores are kept while this page is open, including when you switch between games, and clear when the page is closed or refreshed.</p>
+    <h3 class="notes-h">Algo 2: Explore vs. exploit</h3>
+    <div class="notes-wrap">
+    <table>
+      <thead><tr><th>Game</th><th>The dilemma</th><th>Good strategy</th><th>Discussion question</th></tr></thead>
+      <tbody>
+        <tr><td>Explore vs. Exploit</td><td>You can return to options, and you score every round instead of picking just one</td><td>Try options early, when there's lots of time to benefit; stick with the best one you've found as time runs out</td><td>Should you have explored more or less, now that you know how many rounds there were?</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The Algo 1 games have a "Copy results" button so you can pool the whole class's rounds in a shared sheet. Scores are kept while this page is open, including when you switch between games, and clear when the page is closed or refreshed.</p>
   </details>
 </div>
 
@@ -123,6 +173,8 @@ button:focus-visible{outline:4px solid var(--partner);outline-offset:3px}
       <button data-game="river" aria-label="One-Way River">⛵</button>
       <button data-game="mango" aria-label="Mango Cart Lane">🥭</button>
       <button data-game="partner" aria-label="Project Partner">🤝</button>
+      <span class="sep" aria-hidden="true"></span>
+      <button data-game="explore" aria-label="Explore vs. Exploit">🃏</button>
     </div>
   </div>
   <div class="frames" id="frames"></div>
@@ -130,9 +182,9 @@ button:focus-visible{outline:4px solid var(--partner);outline-offset:3px}
 
 
 <script>
-const TITLES = {river: 'One-Way River', mango: 'Mango Cart Lane', partner: 'Project Partner'};
+const TITLES = {river: 'Algo 1 · One-Way River', mango: 'Algo 1 · Mango Cart Lane', partner: 'Algo 1 · Project Partner', explore: 'Algo 2 · Explore vs. Exploit'};
 const frames = {};
-const FILES = {river: 'games/one-way-river.html', mango: 'games/mango-cart-lane.html', partner: 'games/project-partner.html'};
+const FILES = {river: 'games/one-way-river.html', mango: 'games/mango-cart-lane.html', partner: 'games/project-partner.html', explore: 'games/explore-exploit.html'};
 
 function open(game){
   if (!frames[game]){
